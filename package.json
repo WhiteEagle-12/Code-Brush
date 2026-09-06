@@ -1,1 +1,24 @@
-{"name":"code-brush","version":"0.2.0","type":"module","license":"MIT","description":"An agent-facing animation toolkit: drawings, rigs, deformation, shots, inspection and deterministic rendering.","bin":{"code-brush":"src/cli.mjs"},"exports":"./src/index.mjs","scripts":{"test":"node --test","demo":"node src/cli.mjs render examples/drawing-lab.json --out output/drawing-lab.mp4"},"engines":{"node":">=20"},"dependencies":{"@napi-rs/canvas":"0.1.100"}}
+{
+  "name": "code-brush",
+  "version": "1.0.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "An agent-facing animation toolkit: drawings, rigs, deformation, shots, inspection and deterministic rendering.",
+  "bin": {
+    "code-brush": "src/cli.mjs"
+  },
+  "exports": "./src/index.mjs",
+  "scripts": {
+    "test": "node --test",
+    "demo": "node src/cli.mjs render examples/drawing-lab.json --out output/drawing-lab.mp4",
+    "agent": "node src/agent-cli.mjs",
+    "studio": "node src/studio.mjs",
+    "verify:production": "node scripts/verify-production.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "0.1.100"
+  }
+}

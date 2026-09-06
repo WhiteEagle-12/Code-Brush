@@ -1,3 +1,4 @@
+import{deformVertices,solveRig}from'./character.mjs';
 import{matrix,boneMatrices,skin,solveIK,multiply,inverse,point,clamp}from'./math.mjs';import{evaluate,exposures}from'./project.mjs';import{buildPath,paint,brush,texturedTriangle}from'./drawing.mjs';
 export class Renderer{
  constructor(platform,assets={},plugins={}){this.platform=platform;this.assets=assets;this.plugins=plugins;}
@@ -7,7 +8,12 @@ export class Renderer{
   const env={project:p,time,guides,depth:0};for(const n of p.nodes??[])this.node(c,n,env);c.restore();return p;
  }
  node(c,n,env){
-  if(n.visible===false||env.time<(n.start??-Infinity)||env.time>=(n.end??Infinity))return;if(env.depth>64)throw Error('Drawing recursion exceeded');
+  if(n.visible===false||env.time<(n.start??-Infinity)||env.time>=(n.end??Infinity))return;if((n.isolated||n.mask)&&!n._compositing){
+   const layer=this.platform.createCanvas(c.canvas.width,c.canvas.height),lc=layer.getContext('2d');lc.setTransform(c.getTransform());
+   this.node(lc,{...n,_compositing:true,opacity:1,blend:'source-over',blur:0,shadow:null},env);
+   if(n.mask){const mask=this.platform.createCanvas(c.canvas.width,c.canvas.height),mc=mask.getContext('2d');mc.setTransform(c.getTransform());mc.transform(...matrix(n));this.node(mc,n.mask,{...env,depth:env.depth+1});lc.save();lc.resetTransform();lc.globalCompositeOperation=n.invertMask?'destination-out':'destination-in';lc.drawImage(mask,0,0);lc.restore();}
+   c.save();c.resetTransform();c.globalAlpha*=clamp(n.opacity??1);c.globalCompositeOperation=n.blend??'source-over';if(n.blur)c.filter=`blur(${n.blur}px)`;c.drawImage(layer,0,0);c.restore();return;
+  }if(env.depth>64)throw Error('Drawing recursion exceeded');
   c.save();c.transform(...matrix(n));c.globalAlpha*=clamp(n.opacity??1);c.globalCompositeOperation=n.blend??'source-over';
   if(n.blur)c.filter=`blur(${n.blur}px)`;if(n.shadow){c.shadowColor=n.shadow.color??'#0006';c.shadowBlur=n.shadow.blur??10;c.shadowOffsetX=n.shadow.x??0;c.shadowOffsetY=n.shadow.y??0;}
   if(n.clip)c.clip(buildPath(this.platform.Path2D,n.clip));const w=n.width??100,h=n.height??100;
@@ -24,13 +30,13 @@ export class Renderer{
    case'skeleton':{
     const bones=structuredClone(n.bones??[]);
     for(const constraint of n.ik??[]){if(constraint.enabled===false)continue;const root=bones.find(b=>b.id===constraint.root),child=bones.find(b=>b.id===constraint.child);if(!root||!child)throw Error('Unknown IK bones');const m=boneMatrices(bones),parent=root.parent?m[root.parent]:[1,0,0,1,0,0],target=point(inverse(parent),constraint.target),solution=solveIK([root.x??0,root.y??0],target,root.length,child.length,constraint.bend??1);root.rotation=solution.rootAngle;child.rotation=solution.childAngle;}
-    const pose=boneMatrices(bones),bind=boneMatrices(n.bindBones??n.bones);
+    const constrained=solveRig(bones,n.constraints??[]);const pose=boneMatrices(constrained),bind=boneMatrices(n.bindBones??n.bones);
     for(const slot of n.slots??[]){if(slot.skin){this.node(c,{...slot.node,vertices:skin(slot.node.vertices,slot.skin,bind,pose)},{...env,depth:env.depth+1});}else{if(!pose[slot.bone])throw Error('Unknown slot bone '+slot.bone);c.save();c.transform(...pose[slot.bone]);this.node(c,slot.node,{...env,depth:env.depth+1});c.restore();}}
     if(env.guides){c.strokeStyle='#ff5f80';c.lineWidth=2;for(const b of bones){const a=point(pose[b.id],[0,0]),e=point(pose[b.id],[b.length??30,0]);c.beginPath();c.moveTo(...a);c.lineTo(...e);c.stroke();}}
     break;
    }
    case'mesh':{
-    const vertices=n.vertices.map((v,i)=>[v[0]+(n.offsets?.[i]?.[0]??0),v[1]+(n.offsets?.[i]?.[1]??0)]),img=this.assets[n.asset];
+    const vertices=deformVertices(n),img=this.assets[n.asset];
     for(const tri of n.triangles){const dst=tri.map(i=>vertices[i]);if(img)texturedTriangle(c,img,tri.map(i=>n.uv[i]),dst);else{const p=new this.platform.Path2D();p.moveTo(...dst[0]);p.lineTo(...dst[1]);p.lineTo(...dst[2]);p.closePath();fillStroke(p);}}
     break;
    }

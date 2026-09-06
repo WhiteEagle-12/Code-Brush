@@ -1,0 +1,3 @@
+fastmcp==3.4.7
+mcp==1.29.1
+# Upstream headless Blender MCP is pinned by scripts/setup-blender-mcp.sh.

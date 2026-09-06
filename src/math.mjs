@@ -7,7 +7,14 @@ export function interpolate(a,b,t){
  if(a&&b&&typeof a==='object'&&typeof b==='object'&&!Array.isArray(a)){const o={...a};for(const k of Object.keys(b))o[k]=k in a?interpolate(a[k],b[k],t):b[k];return o;}
  return t<1?a:b;
 }
-export function sample(keys,t){if(!keys?.length)throw Error('Empty keyframe track');if(t<=keys[0][0])return structuredClone(keys[0][1]);for(let i=1;i<keys.length;i++){const[a,u]=keys[i-1],[b,v,e='smooth']=keys[i];if(t<=b){if(t===b)return structuredClone(v);return interpolate(u,v,(easing[e]??easing.smooth)(clamp((t-a)/(b-a))));}}return structuredClone(keys.at(-1)[1]);}
+export function curve(spec,t){
+ if(typeof spec==='string')return(easing[spec]??easing.smooth)(t);
+ if(!spec||spec.type!=='bezier')throw Error('Unknown curve');
+ const cubic=(u,a,b)=>3*(1-u)*(1-u)*u*a+3*(1-u)*u*u*b+u*u*u;let lo=0,hi=1;
+ for(let i=0;i<32;i++){const m=(lo+hi)/2;if(cubic(m,spec.x1,spec.x2)<t)lo=m;else hi=m;}
+ return cubic((lo+hi)/2,spec.y1,spec.y2);
+}
+export function sample(keys,t){if(!keys?.length)throw Error('Empty keyframe track');if(t<=keys[0][0])return structuredClone(keys[0][1]);for(let i=1;i<keys.length;i++){const[a,u]=keys[i-1],[b,v,e='smooth']=keys[i];if(t<=b){if(t===b)return structuredClone(v);return interpolate(u,v,curve(e,clamp((t-a)/(b-a))));}}return structuredClone(keys.at(-1)[1]);}
 export function random(seed=1){let x=seed>>>0;return()=>((x=(Math.imul(x,1664525)+1013904223)>>>0)/4294967296);}
 export const identity=()=>[1,0,0,1,0,0];
 export function multiply(a,b){return[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]];}

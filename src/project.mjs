@@ -1,5 +1,6 @@
+import{applyPoses}from'./character.mjs';
 import{sample,setProperty}from'./math.mjs';
-export function indexNodes(nodes,map=new Map()){for(const n of nodes??[]){if(map.has(n.id))throw Error('Duplicate node id '+n.id);map.set(n.id,n);indexNodes(n.children,map);for(const s of n.slots??[])indexNodes([s.node],map);}return map;}
+export function indexNodes(nodes,map=new Map()){for(const n of nodes??[]){if(map.has(n.id))throw Error('Duplicate node id '+n.id);map.set(n.id,n);indexNodes(n.children,map);if(n.mask)indexNodes([n.mask],map);for(const s of n.slots??[])indexNodes([s.node],map);}return map;}
 export function validate(p){
  const errors=[];if(p.version!==1)errors.push('version must be 1');
  for(const k of['width','height','fps','duration'])if(!Number.isFinite(p[k])||p[k]<=0)errors.push(k+' must be positive');
@@ -14,6 +15,6 @@ export function evaluate(project,time){
  const p=structuredClone(project),nodes=indexNodes(p.nodes);p.camera??={};const shot=p.shots?.find(s=>time>=s.start&&time<s.end)??p.shots?.at(-1);
  if(shot?.camera)Object.assign(p.camera,shot.camera);
  for(const tr of[...(p.tracks??[]),...(shot?.tracks??[])]){const t=tr.local&&shot?time-shot.start:time;setProperty(tr.target==='camera'?p.camera:nodes.get(tr.target),tr.property,sample(tr.keys,t));}
- p.currentShot=shot?.id??'main';return p;
+ for(const node of nodes.values())applyPoses(node);p.currentShot=shot?.id??'main';return p;
 }
 export function exposures(entries,t){let found=null;for(const e of entries??[]){if(t>=e.start&&t<e.end)found=e.drawing;}return found;}

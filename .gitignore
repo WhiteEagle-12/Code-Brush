@@ -2,3 +2,9 @@ node_modules/
 output/
 *.blend1
 __pycache__/
+.runtime/
+.codebrush/
+*.lock
+
+__pycache__/
+*.pyc

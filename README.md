@@ -1,80 +1,77 @@
 # Code-Brush
 
-**An agent-facing toolkit for editable animation production.**
+**An open-source animation production harness for agents.**
 
-Give an agent this repository and `AGENTS.md`. It can create project files, build layered artwork and characters, animate shots, render selected frames, inspect contact sheets, and produce an MP4. It can also extend the renderer through ordinary JavaScript.
+Give an agent this repository and [AGENTS.md](AGENTS.md). It can author editable 2D films, reuse characters, animate poses and drawings, review shots, manage revisions, mix audio, and render final video. When a production needs 3D assets, its MCP server delegates authoring to **headless Blender MCP**, saves `.blend` sources, and imports transparent rendered passes into the 2D timeline.
 
-The toolkit is independent of the example bear and does not prescribe an art style. Version **0.2** provides working 2D production primitives; it is **not yet a complete feature-film production suite** or a guarantee of animation quality.
+Version **1.0.0** includes the production API, MCP server, local editing studio and Blender asset pipeline. Artistic quality depends on the assets, animation and direction supplied by the agent. The harness supports different styles; it does not automatically produce feature-film-quality character animation from a prompt.
 
-## Install and try
+## Start a 2D production
 
-Requires Node.js 20+ and FFmpeg for video output.
+Requires Node.js 20+ and FFmpeg on PATH.
 
 ```sh
 npm ci
 node src/cli.mjs init examples/my-film.json
-node src/cli.mjs inspect examples/my-film.json
-node src/cli.mjs preview examples/my-film.json
-node src/cli.mjs render examples/my-film.json --out output/my-film.mp4
+npm run studio -- examples/my-film.json
 ```
 
-## Implemented
+The local studio provides a scene tree, shot navigation, frame stepping, onion skins, rig guides, property/keyframe editing, JSON node editing, validation and revision restore. Preview speed depends on frame rendering; use encoded video to assess real-time motion and sound.
 
-- Layered scene graph, editable SVG-style paths, gradients, transforms, clipping and blend operations.
-- Seeded pressure-sensitive brush strokes.
-- Exposure sheets and replacement drawings for frame-by-frame animation and pose substitutions.
-- Raster artwork, sprite-sheet crops and image sequences.
-- Numeric, object and compatible-path keyframe interpolation.
-- Hierarchical skeletal rigs, two-bone IK, weighted skinning and textured triangle meshes.
-- Scene and shot tracks, camera animation and local shot timing.
-- A custom-renderer interface for arbitrary Canvas-based drawing and effects.
-- CLI project creation, property editing, keyframe insertion, validation and pose inspection.
-- Headless frame, contact-sheet and H.264 video output.
-- Local shot inspector with frame stepping and rig guides.
-- Multitrack audio trimming, offsets, fades, mixing and limiting through FFmpeg.
-- Optional rendering of an existing `.blend` file using an installed Blender executable.
-
-## Examples
+Agents use JSON requests over stdin or the same operations through MCP:
 
 ```sh
-# Brush work, path morphing and mesh deformation
-node src/cli.mjs render examples/drawing-lab.json --out output/drawing-lab.mp4
-# A quadruped rig blockout in two rendering treatments
-node src/cli.mjs frame examples/quadruped-study.json --time 2 --guides --out output/rig.png
-node src/cli.mjs frame examples/ink-study.json --time 2 --out output/ink.png
-# The earlier 10-second bear production, using its original custom renderer
-node examples/legacy-bear/src/cli.mjs render
+printf '%s\n' '{"method":"project.read","args":{"project":"examples/my-film.json"}}' | npm run --silent agent
+printf '%s\n' '{"method":"film.render","args":{"project":"examples/my-film.json","output":"output/film.mp4"}}' | npm run --silent agent
 ```
 
-The quadruped studies are technical blockouts, not anatomical validation or finished film art. The legacy film demonstrates a specific puppet workflow; it is preserved as an example, not used as the architecture of the general toolkit.
+See [the production API](docs/PRODUCTION.md) for transactions, reusable characters, render jobs and complete examples. Use this API for production editing and rendering; the original CLI remains available for standalone examples.
 
-## An agent's iteration loop
+## Give the agent Blender
+
+Install Blender 4.5 and [uv](https://docs.astral.sh/uv/), then run:
 
 ```sh
-node src/cli.mjs key examples/my-film.json --node subject --property x --time 2 --value 650
-node src/cli.mjs inspect examples/my-film.json --time 2 --node subject
-node src/cli.mjs frame examples/my-film.json --time 2 --out output/pose.png
-node src/cli.mjs contact examples/my-film.json --out output/review.png
+bash scripts/setup-blender-mcp.sh
+```
+
+Configure your agent with [mcp/config.example.json](mcp/config.example.json), replacing its absolute paths. Code-Brush runs its own MCP server and starts the pinned upstream headless Blender MCP as a child process. No Blender GUI session or add-on socket is needed for this backend.
+
+- `blender_tools` discovers upstream tools and schemas.
+- `blender_call` forwards an upstream tool call for modeling, materials, rigs, animation and rendering.
+- `blender_asset` opens or creates a `.blend`, executes Blender Python through MCP, saves the source, renders transparent Cycles passes, and imports them as a 2D sequence.
+
+[Blender setup and workflow](docs/BLENDER_MCP.md) explains persistence, frame timing and render settings. Direct Blender tools remain available for full 3D films, GPU rendering and other passes.
+
+## Production tools
+
+- Layered paths, gradients, pressure-sensitive brushes, raster artwork, replacement drawings and exposure sheets.
+- Keyframes, cubic Bézier timing, shot-local tracks and animated cameras.
+- Skeletal rigs, weighted skinning, two-bone IK, longer CCD chains, joint limits, gaze and rotation constraints.
+- Additive facial poses, mesh shape keys, lattice deformation, alpha masks and isolated compositing.
+- Reusable character files with namespaced nodes, assets, drawings and tracks.
+- Atomic revision-checked edits, snapshots, restore and content-addressed asset imports with provenance.
+- Deterministic frame inspection, contact sheets, resumable frame caches and background render jobs.
+- H.264 MP4, transparent PNG sequences, ProRes 4444 alpha video and multitrack audio.
+- Local JavaScript renderer extensions for project-specific drawing and effects.
+
+Read [the scene format](docs/PROJECT_FORMAT.md) and [the production extensions](docs/PRODUCTION.md). Project plugins and Blender Python are trusted executable authoring code; run projects you trust.
+
+## Examples and verification
+
+```sh
 npm test
-node src/cli.mjs render examples/my-film.json --out output/final.mp4
+npm run verify:production
+npm run demo
+node src/cli.mjs frame examples/quadruped-study.json --time 2 --guides --out output/rig.png
+# With the Blender MCP environment configured:
+.runtime/venv/bin/python scripts/verify-mcp.py
 ```
 
-See [AGENTS.md](AGENTS.md) for the production workflow and [the project format](docs/PROJECT_FORMAT.md) for every supported node and track.
+The Blender integration test builds a moss-covered rock with a fern, saves its source, renders three transparent frames through actual MCP, composites a six-frame video and verifies cache reuse. The production smoke test checks studio HTTP endpoints, audio/video encoding and alpha export. Unit tests cover editing, deformation, timing, revision conflicts and rendering.
 
-## Different styles and realism
+`examples/legacy-bear` preserves the earlier ten-second bear film. It is a specific puppet production. The quadruped studies are rig blockouts; neither establishes anatomical accuracy or a feature-film quality benchmark. A new polished bear film has not been rendered as part of this harness release.
 
-Artwork and rendering methods are replaceable. Ink, flat-color illustration, painted raster layers, replacement drawings and custom effects can share the same shot structure. The engine does not supply anatomical knowledge, reference drawings, automatic inbetweening or film direction; the authoring agent must provide them.
+## License
 
-For photorealistic 3D, the current Blender command is only a launcher for an existing authored `.blend` project:
-
-```sh
-node src/cli.mjs blender scene.blend --start 1 --end 240 --out output/frame_
-```
-
-It is **not** a shared 3D authoring backend yet. Blender was not installed in the validation environment, so that integration has not been render-tested. Building a full common authoring layer, sophisticated deformation, constraint limits, curve editors and production asset/version management remains future work.
-
-## Reproducibility and licensing
-
-MIT-licensed source. The native renderer uses `@napi-rs/canvas`; FFmpeg handles encoding and audio. No hosted model service or API key is needed to render the bundled projects. Custom plugins must sample absolute time and use seeded randomness.
-
-The legacy film's generated background and original synthesized audio are bundled with their provenance. See its `docs/art-direction.md`. Tests cover transforms, timing, skinning, IK, drawing substitutions, mesh texturing and deterministic random-access rendering.
+MIT source. Rendering bundled 2D projects requires no model API or hosted service. Blender and the upstream MCP retain their own licenses. Generated legacy artwork and original synthesized audio carry provenance in `examples/legacy-bear/docs/art-direction.md`.

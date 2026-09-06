@@ -4,8 +4,8 @@ This repository is an animation production toolkit. The examples are replaceable
 
 ## Start here
 
-1. Read README.md and docs/PROJECT_FORMAT.md.
-2. Install dependencies with `npm ci`. FFmpeg must be on PATH for video. Blender is optional.
+1. Read README.md, docs/PROJECT_FORMAT.md and docs/PRODUCTION.md.
+2. Install dependencies with `npm ci`. FFmpeg must be on PATH for video. Use docs/BLENDER_MCP.md to configure headless Blender MCP when 3D assets are needed.
 3. Create a film with `node src/cli.mjs init examples/my-film.json`.
 4. Author the scene's assets, drawings, characters and shot tracks. Use standard JSON nodes or a JavaScript custom-renderer plugin.
 5. Run `validate`, inspect important poses with `frame`, and review a `contact` sheet.
@@ -41,4 +41,8 @@ node src/cli.mjs render examples/my-film.json --width 1280 --out output/draft.mp
 
 Use a custom node and local plugin for rendering methods the standard nodes do not cover. Export a default object of renderer functions `(context, node, environment, resources)`. They receive the evaluated scene, absolute time, loaded images and canvas platform. Plugins are trusted executable project code, not a sandbox.
 
-Add an independent example and a meaningful test when extending an engine capability. Do not describe a command wrapper or prototype as a mature production backend. The optional Blender command invokes an existing .blend file; it is not a 3D authoring API.
+Add an independent example and a meaningful test when extending an engine capability. Do not describe a command wrapper or prototype as a mature production backend. For 3D authoring, use the MCP tools blender_tools, blender_call and blender_asset. Persist scenes in .blend files between calls; use transparent passes for 2D composition. The older CLI blender command remains an existing-file launcher.
+
+## Agent interface
+
+Prefer the production MCP or JSON stdin API over the older editing CLI. Read project revisions before edits, batch related operations, handle conflicts explicitly, and preserve unrelated work. Use project.revisions/project.restore for rollback. Use external character files for reusable designs. Render jobs provide resumable caches; inspect the final encoding before delivery. Never equate available rig controls with validated anatomy or a promised art-quality level.

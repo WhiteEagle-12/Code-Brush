@@ -8,7 +8,7 @@ All times are seconds. Transforms use pixels and **degrees**. Coordinates are lo
 
 `id`, `type`, `x`, `y`, `rotation`, `scale`, `scaleX`, `scaleY`, `pivot: [x,y]`, `opacity`, `visible`, `start`, `end`, `blend`, `clip`, `blur`, and `shadow: {color,blur,x,y}`.
 
-Clip accepts an SVG path string or command array in local coordinates. Blend is a Canvas composite-operation name. Group opacity is applied per child; groups are not isolated compositing buffers.
+Clip accepts an SVG path string or command array in local coordinates. Blend is a Canvas composite-operation name. Set `isolated: true` to composite children into an offscreen buffer before group opacity and blending. `mask` accepts a node in the same local coordinates; `invertMask: true` subtracts its alpha. Masks automatically isolate their node.
 
 ## Node types
 
@@ -75,3 +75,5 @@ A mesh slot can use `skin: [[{bone:'upper',weight:1}], ...]` instead of a bone a
 ```
 
 FFmpeg trims, offsets, fades, mixes and limits the tracks. `duration` is needed for a fade-out. A simple `audio: 'soundtrack.wav'` is also supported. There is no speech generation or automatic lip-sync.
+
+See [production extensions](PRODUCTION.md) for character instances, poses, shape keys, lattices, constraints, masks and revision-aware editing.

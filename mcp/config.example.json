@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "code-brush": {
+      "command": "/absolute/path/Code-Brush/.runtime/venv/bin/python",
+      "args": ["/absolute/path/Code-Brush/mcp/server.py"],
+      "env": {
+        "BLENDER_EXECUTABLE": "/absolute/path/blender",
+        "BLENDER_MCP_COMMAND": "/absolute/path/Code-Brush/.runtime/venv/bin/blender-mcp-server"
+      }
+    }
+  }
+}
