@@ -70,7 +70,7 @@ node src/cli.mjs frame examples/quadruped-study.json --time 2 --guides --out out
 
 The Blender integration test builds a moss-covered rock with a fern, saves its source, renders three transparent frames through actual MCP, composites a six-frame video and verifies cache reuse. The production smoke test checks studio HTTP endpoints, audio/video encoding and alpha export. Unit tests cover editing, deformation, timing, revision conflicts and rendering.
 
-`examples/legacy-bear` preserves the earlier ten-second bear film. It is a specific puppet production. The quadruped studies are rig blockouts; neither establishes anatomical accuracy or a feature-film quality benchmark. A new polished bear film has not been rendered as part of this harness release.
+`examples/legacy-bear` preserves the earlier ten-second bear film. It is a specific puppet production. The quadruped studies are rig blockouts; neither establishes anatomical accuracy or a feature-film quality benchmark. The new [Through the Falls](examples/through-the-falls) production contains a ten-second bear-and-waterfall scene with entirely code-authored artwork, original sound and a reproducible render workflow.
 
 ## License
 

@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "title": "Through the Falls",
+  "width": 1600,
+  "height": 900,
+  "fps": 24,
+  "duration": 10,
+  "background": "#10252d",
+  "plugin": "./film.mjs",
+  "dependencies": [
+    "./paint.mjs",
+    "./environment.mjs",
+    "./bear.mjs"
+  ],
+  "nodes": [
+    {
+      "id": "painted-film",
+      "type": "custom",
+      "renderer": "film"
+    }
+  ],
+  "shots": [
+    {
+      "id": "approach",
+      "start": 0,
+      "end": 3.25
+    },
+    {
+      "id": "cold-spray",
+      "start": 3.25,
+      "end": 5.5
+    },
+    {
+      "id": "through-the-curtain",
+      "start": 5.5,
+      "end": 8.65
+    },
+    {
+      "id": "into-the-mist",
+      "start": 8.65,
+      "end": 10
+    }
+  ],
+  "audioTracks": [
+    {
+      "file": "audio/river.wav",
+      "gain": 1.5
+    },
+    {
+      "file": "audio/score.wav",
+      "gain": 1.4
+    },
+    {
+      "file": "audio/foley.wav",
+      "gain": 1.7
+    }
+  ]
+}
