@@ -1,0 +1,18 @@
+{
+ "title":"The Other Side", "duration":10, "fps":24,"width":1920,"height":1080,"seed":80421,
+ "scene":"scene.mjs", "background":"assets/grotto.png",
+ "shots":[
+  {"id":"approach","start":0,"end":3.1,"description":"A little bear follows the sound of water."},
+  {"id":"courage","start":3.1,"end":6.3,"description":"A cold droplet. A hesitation. A determined breath."},
+  {"id":"crossing","start":6.3,"end":10,"description":"He ducks into the falling water and vanishes behind it."}
+ ],
+ "tracks":{
+  "x":[[0,270],[0.4,310,"linear"],[2.6,845,"linear"],[3.1,940],[4.3,948],[5.5,990],[6.3,1050],[8.8,1470,"linear"],[9.5,1590],[10,1590]],
+  "reach":[[0,0],[3.15,0],[3.85,1],[4.25,1],[4.48,0],[5.55,0],[6.1,0.35],[6.65,0]],
+  "headTilt":[[0,-0.03],[2.6,-0.03],[3.4,-0.16],[4.1,-0.20],[4.35,0.12],[4.7,-0.08],[5.25,0.06],[5.7,-0.13],[6.3,0.10],[7.3,0.27],[8.5,0.18],[10,0.18]],
+  "duck":[[0,0],[6.3,0],[7.0,0.2],[7.65,1],[9.3,1],[10,1]],
+  "wet":[[0,0],[7.25,0],[8.65,1],[10,1]]
+ },
+ "audio":{"waterfall":0.58,"music":0.32,"foley":0.8},
+ "beats":[{"time":0.3,"name":"first steps"},{"time":3.85,"name":"test the spray"},{"time":4.3,"name":"cold droplet"},{"time":5.45,"name":"resolve"},{"time":7.5,"name":"enter water"},{"time":9.15,"name":"disappear"}]
+}

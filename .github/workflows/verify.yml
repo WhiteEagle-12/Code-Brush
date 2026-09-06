@@ -1,0 +1,19 @@
+name: Verify and render
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: npm test
+      - run: node src/cli.mjs render examples/drawing-lab.json --width 640 --out output/drawing-lab.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drawing-lab
+          path: output/drawing-lab.mp4

@@ -1,0 +1,7 @@
+{
+  "name": "brookframe", "version": "0.1.0", "type": "module",
+  "description": "Deterministic, agent-friendly 2D short-film harness with character rigs, shot timelines, effects, sound and headless rendering.",
+  "license": "MIT", "bin": {"brookframe": "src/cli.mjs"},
+  "scripts": {"preview":"node src/cli.mjs preview", "render":"node src/cli.mjs render", "contact":"node src/cli.mjs contact", "test":"node --test"},
+  "engines":{"node":">=20"}, "dependencies":{"@napi-rs/canvas":"0.1.100"}
+}

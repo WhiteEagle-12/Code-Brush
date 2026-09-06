@@ -1,0 +1,13 @@
+import{random,point,inverse,multiply}from'./math.mjs';
+export function buildPath(Path2D,commands){if(typeof commands==='string')return new Path2D(commands);const p=new Path2D();for(const [cmd,...v]of commands??[]){switch(cmd){case'M':p.moveTo(...v);break;case'L':p.lineTo(...v);break;case'C':p.bezierCurveTo(...v);break;case'Q':p.quadraticCurveTo(...v);break;case'Z':p.closePath();break;default:throw Error('Unknown path command '+cmd);}}return p;}
+export function paint(c,value,bounds=[0,0,100,100]){if(typeof value==='string')return value;if(!value)return'transparent';const [x,y,w,h]=bounds;let g;if(value.type==='radial')g=c.createRadialGradient(value.x??x+w/2,value.y??y+h/2,0,value.x??x+w/2,value.y??y+h/2,value.radius??Math.max(w,h)/2);else g=c.createLinearGradient(...(value.from??[x,y]),...(value.to??[x+w,y+h]));for(const[o,col]of value.stops)g.addColorStop(o,col);return g;}
+export function brush(c,n){
+ const pts=n.points??[],r=random(n.seed??1),spacing=Math.max(.3,n.spacing??(n.size??8)*.14);let carry=0;
+ function dab(x,y,p=1){c.save();c.globalAlpha*=(n.flow??.55);c.fillStyle=n.color??'#111';const size=(n.size??8)*Math.max(.02,p);for(let j=0;j<(n.grain??1);j++){const a=r()*Math.PI*2,d=(n.scatter??0)*size*r();c.beginPath();c.ellipse(x+Math.cos(a)*d,y+Math.sin(a)*d,size/2*(.75+r()*.25),size/2*(n.roundness??1),n.angle??0,0,Math.PI*2);c.fill();}c.restore();}
+ if(pts.length)dab(...pts[0]);for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],d=Math.hypot(b[0]-a[0],b[1]-a[1]);if(!d)continue;for(let s=spacing-carry;s<=d;s+=spacing){const q=s/d;dab(a[0]+(b[0]-a[0])*q,a[1]+(b[1]-a[1])*q,(a[2]??1)+((b[2]??1)-(a[2]??1))*q);}carry=(carry+d)%spacing;}
+}
+export function texturedTriangle(c,img,src,dst){
+ const a=[src[1][0]-src[0][0],src[1][1]-src[0][1],src[2][0]-src[0][0],src[2][1]-src[0][1],src[0][0],src[0][1]],b=[dst[1][0]-dst[0][0],dst[1][1]-dst[0][1],dst[2][0]-dst[0][0],dst[2][1]-dst[0][1],dst[0][0],dst[0][1]];
+ let m;try{m=multiply(b,inverse(a));}catch{return;}const center=[dst.reduce((s,p)=>s+p[0],0)/3,dst.reduce((s,p)=>s+p[1],0)/3];const clip=dst.map(p=>{const dx=p[0]-center[0],dy=p[1]-center[1],d=Math.hypot(dx,dy)||1;return[p[0]+dx/d*1.8,p[1]+dy/d*1.8];});c.save();c.beginPath();c.moveTo(...clip[0]);c.lineTo(...clip[1]);c.lineTo(...clip[2]);c.closePath();c.clip();c.transform(...m);c.drawImage(img,0,0);c.restore();
+}
+export function gridMesh(width,height,columns=8,rows=8){const vertices=[],uv=[],triangles=[];for(let y=0;y<=rows;y++)for(let x=0;x<=columns;x++){vertices.push([x*width/columns,y*height/rows]);uv.push([x*width/columns,y*height/rows]);}for(let y=0;y<rows;y++)for(let x=0;x<columns;x++){const a=y*(columns+1)+x,b=a+1,d=a+columns+1,e=d+1;triangles.push([a,b,e],[a,e,d]);}return{vertices,uv,triangles};}
